@@ -1,0 +1,205 @@
+version: '3.8'
+
+services:
+  minio:
+    image: minio/minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: admin
+      MINIO_ROOT_PASSWORD: password
+    volumes:
+      - minio-data:/data
+    command: server /data --console-address ":9001"
+
+  spark:
+    image: bitnami/spark:3.4.0
+    environment:
+      - SPARK_MODE=master
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./spark_jobs:/spark_jobs
+      - ./data:/data
+
+  spark-worker:
+    image: bitnami/spark:3.4.0
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark:7077
+    depends_on:
+      - spark
+
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: student_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  streamlit:
+    build:
+      context: .
+      dockerfile: Dockerfile.streamlit
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./streamlit_app:/app
+    depends_on:
+      - postgres
+
+volumes:
+  minio-data:
+  postgres-data:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# version: '3.8'
+# services:
+#   # Batch Services (unchanged)
+#   airflow:
+#     image: apache/airflow:2.7.3
+#     environment:
+#       - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+#       - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
+#     volumes:
+#       - ./dags:/opt/airflow/dags
+#       - ./data:/opt/airflow/data
+#     ports:
+#       - "8080:8080"
+#     depends_on:
+#       - postgres
+#     command: >
+#       bash -c "airflow db init && airflow users create --username admin --password admin --firstname Admin --lastname User --role Admin --email admin@example.com && airflow webserver & airflow scheduler"
+
+#   minio:
+#     image: minio/minio:latest
+#     environment:
+#       - MINIO_ROOT_USER=admin
+#       - MINIO_ROOT_PASSWORD=password
+#     volumes:
+#       - minio-data:/data
+#     ports:
+#       - "9000:9000"
+#       - "9001:9001"
+#     command: server /data --console-address ":9001"
+
+#   postgres:
+#     image: postgres:15
+#     environment:
+#       - POSTGRES_USER=airflow
+#       - POSTGRES_PASSWORD=airflow
+#       - POSTGRES_DB=airflow
+#     volumes:
+#       - postgres-data:/var/lib/postgresql/data
+#     ports:
+#       - "5432:5432"
+
+#   # Streaming Services
+#   zookeeper:
+#     image: confluentinc/cp-zookeeper:7.4.0
+#     environment:
+#       - ZOOKEEPER_CLIENT_PORT=2181
+#       - ZOOKEEPER_TICK_TIME=2000
+#     ports:
+#       - "2181:2181"
+
+#   kafka:
+#     image: confluentinc/cp-kafka:7.4.0
+#     depends_on:
+#       - zookeeper
+#     environment:
+#       - KAFKA_BROKER_ID=1
+#       - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+#       - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+#       - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+#     ports:
+#       - "9092:9092"
+
+#   spark:
+#     image: bitnami/spark:3.4.0
+#     environment:
+#       - SPARK_MODE=master
+#     volumes:
+#       - ./spark:/spark
+#       - ./models:/app/models  # Shared volume for the model
+#     ports:
+#       - "7077:7077"
+#       - "8081:8081"
+
+#   spark-worker:
+#     image: bitnami/spark:3.4.0
+#     environment:
+#       - SPARK_MODE=worker
+#       - SPARK_MASTER_URL=spark://spark:7077
+#     depends_on:
+#       - spark
+#     volumes:
+#       - ./models:/app/models  # Shared volume for the model
+
+#   mongodb:
+#     image: mongo:6
+#     volumes:
+#       - mongodb-data:/data/db
+#     ports:
+#       - "27017:27017"
+
+#   stream-simulator:
+#     build:
+#       context: .
+#       dockerfile: Dockerfile.stream_simulator
+#     volumes:
+#       - ./data:/app/data
+#     depends_on:
+#       - kafka
+
+#   data-prep:
+#     build:
+#       context: .
+#       dockerfile: Dockerfile.data_prep
+#     volumes:
+#       - ./viz_data:/app/viz_data
+#     depends_on:
+#       - mongodb
+
+#   streamlit:
+#     build:
+#       context: .
+#       dockerfile: Dockerfile.streamlit
+#     volumes:
+#       - ./viz_data:/app/viz_data
+#     ports:
+#       - "8501:8501"
+#     depends_on:
+#       - data-prep
+
+#   # Training Service
+#   train-model:
+#     build:
+#       context: .
+#       dockerfile: Dockerfile.train_model
+#     volumes:
+#       - ./data:/app/data
+#       - ./models:/app/models  # Shared volume to save the model
+
+# volumes:
+#   minio-data:
+#   postgres-data:
+#   mongodb-data:

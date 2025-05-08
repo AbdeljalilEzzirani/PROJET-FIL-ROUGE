@@ -1,0 +1,5 @@
+FROM python:3.9
+WORKDIR /app
+COPY dashboard.py .
+RUN pip install streamlit
+CMD ["streamlit", "run", "dashboard.py", "--server.port", "8501"]
