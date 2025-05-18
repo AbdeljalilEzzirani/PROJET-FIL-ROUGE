@@ -19,9 +19,12 @@ services:
       - SPARK_MODE=master
     ports:
       - "8080:8080"
+    # volumes:
+    #   - ./spark_jobs:/spark_jobs
+    #   - ./data:/data
     volumes:
       - ./spark_jobs:/spark_jobs
-      - ./data:/data
+      - ./spark_jobs/lib:/tmp/spark_jobs/lib
 
   spark-worker:
     image: bitnami/spark:3.4.0
@@ -45,7 +48,7 @@ services:
   streamlit:
     build:
       context: .
-      dockerfile: Dockerfile.streamlit
+      dockerfile: streamlit_app/Dockerfile.streamlit
     ports:
       - "8501:8501"
     volumes:

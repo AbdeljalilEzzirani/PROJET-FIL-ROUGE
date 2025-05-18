@@ -1,5 +1,19 @@
 FROM python:3.9
+
 WORKDIR /app
-COPY dashboard.py .
-RUN pip install streamlit
-CMD ["streamlit", "run", "dashboard.py", "--server.port", "8501"]
+
+COPY streamlit_app/dashboard.py .
+
+RUN pip install streamlit psycopg2-binary plotly
+
+CMD ["streamlit", "run", "dashboard.py", "--server.port=8501", "--server.address=0.0.0.0"]
+
+# FROM python:3.9
+
+# WORKDIR /app
+
+# COPY streamlit_app/dashboard.py .
+
+# RUN pip install streamlit psycopg2-binary
+
+# CMD ["streamlit", "run", "dashboard.py", "--server.port=8501", "--server.address=0.0.0.0"]
