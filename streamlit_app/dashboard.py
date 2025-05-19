@@ -164,6 +164,27 @@ conn = psycopg2.connect(
 # عنوان الصفحة
 st.title("Student Data Dashboard")
 
+
+# Raw Data Tables لعرض كل الأعمدة
+# 1. Raw Data لـ grading_data
+st.subheader("Raw Data: Students Grading Dataset (All Columns)")
+query_raw_grading = 'SELECT * FROM grading_data'
+df_raw_grading = pd.read_sql(query_raw_grading, conn)
+st.dataframe(df_raw_grading)
+
+# 2. Raw Data لـ performance_data
+st.subheader("Raw Data: Student Performance Large Dataset (All Columns)")
+query_raw_performance = 'SELECT * FROM performance_data'
+df_raw_performance = pd.read_sql(query_raw_performance, conn)
+st.dataframe(df_raw_performance)
+
+# 3. Raw Data لـ career_data
+st.subheader("Raw Data: Education Career Success (All Columns)")
+query_raw_career = 'SELECT * FROM career_data'
+df_raw_career = pd.read_sql(query_raw_career, conn)
+st.dataframe(df_raw_career)
+
+
 # 1. جدول grading_data (Students_Grading_Dataset)
 st.subheader("Students Grading Dataset")
 query_grading = 'SELECT "Student_ID", "Department", "Total_Score" AS "Success_Rate", "Source" FROM grading_data'
